@@ -1,20 +1,19 @@
+const express = require('express');
+const { createProduct } = require('../Controllers/ProductController');
 const multer = require('multer');
 
-// Memory storage for the images
-const storage = multer.memoryStorage();
+const router = express.Router();
 
+// Multer configuration to handle multiple file fields
+const storage = multer.memoryStorage(); 
 const upload = multer({
-    storage: storage,
-    limits: { fileSize: 1024 * 1024 * 5 }, // Limit file size to 5MB per image
-    fileFilter: (req, file, cb) => {
-        // Accept only image files
-        if (file.mimetype.startsWith('image/')) {
-            cb(null, true);
-        } else {
-            cb(new AppError('Only image files are allowed!', 400), false);
-        }
-    }
+  storage: storage,
+  limits: { fileSize: 1024 * 1024 * 5 } // 5MB file size limit
 });
 
-// Handle multiple image uploads (up to 5)
-exports.uploadProductImages = upload.array('images', 5);
+router.post('/create', upload.fields([
+  { name: 'thumbnail', maxCount: 1 },  // Single thumbnail
+  { name: 'images', maxCount: 5 }      // Up to 5 images
+]), createProduct);
+
+module.exports = router;
