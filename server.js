@@ -1,7 +1,7 @@
 const mongoose = require('mongoose');
 const dotenv = require('dotenv');
 const app = require('./app');
-const { admin, bucket } = require('./firebase'); // Import the Firebase module
+const { admin, bucket } = require('./firebase'); 
 
 dotenv.config({ path: './config.env' });
 
@@ -9,7 +9,6 @@ const db = process.env.DATABASE;
 
 const PORT = process.env.PORT || 3000;
 
-// Connect to MongoDB
 mongoose.connect(db, {
     
 }).then(() => {

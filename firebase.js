@@ -4,7 +4,7 @@ const serviceAccount = require('./config/mycrafts-c0c2c-firebase-adminsdk-b6m70-
 if (!admin.apps.length) {
     admin.initializeApp({
         credential: admin.credential.cert(serviceAccount),
-        storageBucket: 'gs://mycrafts-c0c2c.appspot.com', // Use your actual bucket name
+        storageBucket: 'gs://mycrafts-c0c2c.appspot.com', 
     });
 }
 
