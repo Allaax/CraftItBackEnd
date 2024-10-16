@@ -81,7 +81,7 @@ exports.createProduct = async (req, res) => {
 
 exports.getStoreOwnerById = async (req, res) => {
   try {
-    const storeOwner = await StoreOwner.findById(req.params.id).populate('store.products').populate('store.name');
+    const storeOwner = await StoreOwner.findOne({user: req.params.userId}).populate('store.products').populate('store.name');
     if (!storeOwner) {
       return res.status(404).json({ message: 'Store  not found' });
     }
