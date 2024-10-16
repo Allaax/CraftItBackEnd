@@ -3,8 +3,11 @@ const Product = require('../Models/ProductSchema'); // Adjust the path as needed
 const { bucket } = require('../firebase'); // Import the bucket from firebase.js
 
 // Function to upload images to Firebase
-const uploadImageToFirebase = async (file) => {
-  const blob = bucket.file(file.name);
+const uploadImageToFirebase = async (file, userId) => {
+  // Create a unique filename or structured path
+  const path = `users/${userId}/images/${Date.now()}_${file.name}`; // Example path
+  const blob = bucket.file(path);
+  
   const stream = blob.createWriteStream({
     metadata: {
       contentType: file.mimetype
@@ -17,12 +20,17 @@ const uploadImageToFirebase = async (file) => {
     });
 
     stream.on('finish', () => {
-      resolve(`https://storage.googleapis.com/${bucket.name}/${blob.name}`);
+      // Construct the public URL
+      const publicUrl = `https://firebasestorage.googleapis.com/v0/b/${bucket.name}/o/${encodeURIComponent(blob.name)}?alt=media`;
+      resolve(publicUrl);
     });
 
     stream.end(file.data);
   });
 };
+
+
+
 
 exports.createProduct = async (req, res) => {
   try {
@@ -73,7 +81,7 @@ exports.createProduct = async (req, res) => {
 
 exports.getStoreOwnerById = async (req, res) => {
   try {
-    const storeOwner = await StoreOwner.findOne({ user: req.params.userId }).populate('store.products').populate('store.name');
+    const storeOwner = await StoreOwner.findById(req.params.id).populate('store.products').populate('store.name');
     if (!storeOwner) {
       return res.status(404).json({ message: 'Store  not found' });
     }
@@ -84,11 +92,45 @@ exports.getStoreOwnerById = async (req, res) => {
 };
 exports.getAllStores = async (req, res) => {
   try {
-    const storeOwner = await StoreOwner.findOne();
+    const storeOwner = await StoreOwner.find().populate('store.products');
     if (!storeOwner) {
       return res.status(404).json({ message: 'no Store found' });
     }
     res.status(200).json(storeOwner);
+  } catch (error) {
+    res.status(500).json({ message: error.message });
+  }
+};
+exports.updateStoreInfo = async (req, res) => {
+  try {
+    const userId = req.params.userId;  // Assuming userId is provided as a route parameter
+    const { name, bio, contactInfo } = req.body;  // Data from the request body
+    
+    // Find the store owner by user ID
+    const storeOwner = await StoreOwner.findOne({ user: userId });
+    if (!storeOwner) {
+      return res.status(404).json({ message: 'Store owner not found' });
+    }
+    
+    // Update the store fields
+    if (name) storeOwner.store.name = name;
+    if (bio) storeOwner.store.bio = bio;
+    if (contactInfo) storeOwner.store.contactInfo = contactInfo;
+    
+    // Check if an image is provided in the request files and upload it
+    if (req.files && req.files.image) {
+      const imageUrl = await uploadImageToFirebase(req.files.image, userId);  // Uploading the image
+      storeOwner.store.image = imageUrl;
+    }
+
+    // Save the updated storeOwner
+    await storeOwner.save();
+    
+    res.status(200).json({
+      status: 'success',
+      message: 'Store information updated successfully!',
+      data: { store: storeOwner.store }
+    });
   } catch (error) {
     res.status(500).json({ message: error.message });
   }

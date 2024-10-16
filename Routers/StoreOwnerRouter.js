@@ -9,7 +9,8 @@ const storage = multer.memoryStorage();
 
 router.get('/', storeOwnerRouter.getAllStores);
 router.post('/:userId/product', storeOwnerRouter.createProduct);
-router.get('/:userId', storeOwnerRouter.getStoreOwnerById);
+router.get('/:id', storeOwnerRouter.getStoreOwnerById);
+router.put('/:userId', storeOwnerRouter.updateStoreInfo);
 
 
 module.exports = router;
