@@ -2,7 +2,7 @@ const Order = require('../Models/OrderSchema');
 const Product = require('../Models/ProductSchema');
 
 
-
+//but the user id instead of storeid
 exports.createOrder = async (req, res) => {
   try {
     // Check if customer and store are provided
