@@ -8,7 +8,7 @@ router.post('/cart/:userId', customerRouter.addToCart);
 router.get('/cart/:userId', customerRouter.getCart);
 router.put('/cart/:userId', customerRouter.updateCartItemQuantity); 
 router.delete('/cart/:userId', customerRouter.removeFromCart); 
-
+router.get('/customer/:customerId', customerRouter.getCustomerById);
 
 
 module.exports = router;
