@@ -3,6 +3,7 @@ const mongoose = require('mongoose');
 const customerSchema = new mongoose.Schema({
   user: { type: mongoose.Schema.Types.ObjectId, ref: 'User', required: true }, 
   address: { type: String },  
+  // phoneNumber:{ type: String }, 
   cart: [{
     productId: { type: mongoose.Schema.Types.ObjectId, ref: 'Product' },
     quantity: { type: Number, default: 1 }

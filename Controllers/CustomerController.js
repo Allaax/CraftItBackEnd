@@ -66,7 +66,6 @@ exports.addToCart = async (req, res) => {
     res.status(500).json({ message: error.message });
   }
 };
-
 exports.getCart = async (req, res) => {
   const { userId } = req.params;
 
@@ -76,7 +75,8 @@ exports.getCart = async (req, res) => {
       .populate({
         path: 'cart.productId',
         model: 'Product',  // Assuming your Product model is named 'Product'
-        select: 'name price description images' // Select the fields you need
+        // Select all fields from the Product model
+        select: '-__v' // Exclude the version key, or simply omit `select` to include all fields
       });
 
     if (!customer) {
@@ -91,4 +91,65 @@ exports.getCart = async (req, res) => {
   }
 };
 
+
+exports.updateCartItemQuantity = async (req, res) => {
+  try {
+    const { userId } = req.params; // Get userId from request parameters
+    const { productId, quantity } = req.body;
+
+    // Find the customer by user ID
+    const customer = await Customer.findOne({ user: userId });
+    if (!customer) {
+      return res.status(404).json({ message: 'Customer not found' });
+    }
+
+    // Find the product in the cart
+    const cartItem = customer.cart.find(item => item.productId.toString() === productId);
+
+    if (!cartItem) {
+      return res.status(404).json({ message: 'Product not found in cart' });
+    }
+
+    // Update the quantity
+    cartItem.quantity = quantity;
+
+    // Save the updated customer
+    await customer.save();
+
+    res.status(200).json({
+      status: 'success',
+      message: 'Cart item quantity updated successfully!',
+      data: { cart: customer.cart }
+    });
+  } catch (error) {
+    res.status(500).json({ message: error.message });
+  }
+};
+
+exports.removeFromCart = async (req, res) => {
+  try {
+    const { userId } = req.params;
+    const { productId } = req.body;
+
+    // Find the customer by user ID
+    const customer = await Customer.findOne({ user: userId });
+    if (!customer) {
+      return res.status(404).json({ message: 'Customer not found' });
+    }
+
+    // Filter the cart to remove the product
+    customer.cart = customer.cart.filter(item => item.productId.toString() !== productId);
+
+    // Save the updated customer
+    await customer.save();
+
+    res.status(200).json({
+      status: 'success',
+      message: 'Product removed from cart successfully!',
+      data: { cart: customer.cart }
+    });
+  } catch (error) {
+    res.status(500).json({ message: error.message });
+  }
+};
 
